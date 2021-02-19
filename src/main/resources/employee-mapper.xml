@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="employeeMapper">
+	<resultMap type='employee' id='employeeData'>
+		<id property="emp_id" column="emp_id" />
+		<result property='firstName' column='firstName' />
+		<result property='lastName' column='lastName' />
+		<result property="title" column='title' />
+		<result property='email' column='email' />
+		<result property='personNumber' column='personNumber' />
+		<result property='jobGrade' column='jbGrade' />
+		<result property='station' column='station' />
+		<result property='department' column='department' />
+		<result property="dateOfJoining" column="dateOfJoining" />
+		
+		<collection property="leaves" ofType="Leave" javaType="ArrayList" column="leave_id">
+			<result property="leave_id" column="leave_id" />
+			<result property='last_day_leave_taken'	column='last_day_leave_taken' />
+			<result property='days_requested' column='days_requested' />
+			<result property="leave_type" column='leave_type' />
+			<result property='leave_start_date' column='leave_start_date' />
+			<result property='leave_end_date' column='leave_end_date' />
+			<result property="annual_leave_days" column="annual_leave_days" />
+			<result property='leave_status' column='leave_status' />
+		</collection>
+	</resultMap>
+	<resultMap type='Leave' id='leaveData'>
+		<id property="leave_id" column="leave_id" />
+		<result property="emp_id" column="emp_id" />
+		<result property='last_day_leave_taken'
+			column='last_day_leave_taken' />
+		<result property='days_requested' column='days_requested' />
+		<result property="leave_type" column='leave_type' />
+		<result property='leave_start_date' column='leave_start_date' />
+		<result property='leave_end_date' column='leave_end_date' />
+		<result property="annual_leave_days" column="annual_leave_days" />
+		<result property='leave_status' column='leave_status' />
+		<association property="employee" column="emp_id" javaType="Employee" resultMap="employeeData"/>
+	</resultMap>
+
+	<insert id="createEmployee" parameterType="employee"
+		keyProperty='emp_id'>
+		INSERT INTO
+		employees(firstName,lastName,title,email,personNumber,jobGrade,station,department,dateOfJoining)
+		VALUES(#{firstName}, #{lastName}, #{title}, #{email},#{personNumber},
+		#{jobGrade}, #{station}, #{department},#{dateOfJoining})
+	</insert>
+	<insert id="applyLeave" parameterType="leave"
+		keyProperty='leave_id'>
+		INSERT INTO
+		leaves(emp_id,last_day_leave_taken,days_requested,leave_type,leave_start_date,leave_end_date)
+		VALUES(#{emp_id},#{last_day_leave_taken}, #{days_requested},
+		#{leave_type},#{leave_start_date},#{leave_end_date})
+	</insert>
+	<select id="getEmployeeById" parameterType="String"
+		resultMap="employeeData">
+		select * from employees inner join leaves on employees.emp_id = leaves.emp_id where personNumber=#{pNumber};
+	</select>
+	
+	<select id="getAllEmployees" resultMap="employeeData">
+		select * from employees;
+	</select>
+	<select id="getEmployees" resultMap="employeeData">
+		SELECT e.emp_id,e.firstName,e.lastName,e.title,e.email,
+		e.personNumber,e.jobGrade,e.station,e.department,e.dateOfJoining,
+		l.leave_id as leave_id,l.last_day_leave_taken as last_day_leave_taken,
+		l.days_requested as days_requested,l.leave_type as leave_type,
+		l.leave_start_date as leave_start_date,l.leave_end_date as leave_end_date,
+		l.leave_status as leave_status FROM employees e inner join leaves l on e.emp_id=l.emp_id
+	</select>
+	<select id="getEmps" resultMap="employeeData">
+		select * from employees inner join leaves on employees.emp_id = leaves.emp_id
+	</select>
+	<select id="getLeaves" resultMap="leaveData">
+		select * from leaves inner join employees on employees.emp_id = leaves.emp_id
+	</select>
+	<update id="addLeaveComments" parameterType="Leave">
+		update leaves set leave_status=#{leave_status},leave_comments=#{leave_comments},l_bal=#{l_bal}
+		where leave_id=#{leave_id}
+	</update>
+	<select id="getLeaveById" resultMap="leaveData">
+		select * from leaves inner join employees on employees.emp_id = leaves.emp_id where leave_id=#{leave_id}
+	</select>
+	<select id="getLeavesFromEmps" resultMap="leaveData">
+		select * from employees inner join leaves on employees.emp_id = leaves.emp_id where emp_id=#{emp_id}
+	</select>
+	<delete id='deleteEmployee' parameterType='int'>
+		delete from employees where emp_id=#{emp_id};
+	</delete>
+</mapper>
